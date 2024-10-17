@@ -1,0 +1,16 @@
+{
+  "name": "undawn-camp-competition",
+  "version": "1.0.0",
+  "description": "Discord OAuth integration for UNDAWN Camp Competition",
+  "main": "discord-oauth-server.js",
+  "scripts": {
+    "start": "node discord-oauth-server.js"
+  },
+  "dependencies": {
+    "express": "^4.21.1",
+    "node-fetch": "^2.7.0"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC"
+}

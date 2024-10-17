@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Discord OAuth Login</title>
+    <style>
+        .hidden { display: none; }
+    </style>
+</head>
+<body>
+    <h1>Discord OAuth Login</h1>
+    <button id="login-button">Login with Discord</button>
+    <div id="message"></div>
+    
+    <form id="ingame-form" class="hidden">
+        <h2>Enter Your In-Game Details</h2>
+        <label for="ingame-name">In-Game Name:</label>
+        <input type="text" id="ingame-name" required>
+        <label for="ingame-rating">Rating:</label>
+        <input type="number" id="ingame-rating" required>
+        <button type="submit">Submit</button>
+    </form>
+
+    <script>
+        const CLIENT_ID = '1295476827258753126';
+        const REDIRECT_URI = 'http://localhost:3000/auth/discord/callback';
+
+        document.getElementById('login-button').addEventListener('click', () => {
+            window.location.href = `https://discord.com/api/oauth2/authorize?client_id=${CLIENT_ID}&redirect_uri=${encodeURIComponent(REDIRECT_URI)}&response_type=code&scope=identify`;
+        });
+
+        const urlParams = new URLSearchParams(window.location.search);
+        const code = urlParams.get('code');
+
+        if (code) {
+            fetch('/auth/discord/token', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ code }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                document.getElementById('message').textContent = `Authentication successful! Welcome, ${data.username}!`;
+                document.getElementById('ingame-form').classList.remove('hidden');
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                document.getElementById('message').textContent = 'An error occurred during login.';
+            });
+        }
+
+        document.getElementById('ingame-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            const ingameName = document.getElementById('ingame-name').value;
+            const ingameRating = document.getElementById('ingame-rating').value;
+            
+            fetch('/update-user-profile', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ ingameName, ingameRating }),
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.success) {
+                    window.location.href = '/home';
+                } else {
+                    document.getElementById('message').textContent = 'Error updating profile. Please try again.';
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                document.getElementById('message').textContent = 'An error occurred. Please try again.';
+            });
+        });
+    </script>
+</body>
+</html>
